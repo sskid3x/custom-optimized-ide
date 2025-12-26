@@ -49,7 +49,6 @@ class PythonIDE(ctk.CTk):
         textbox.pack(side="right", fill="both", expand=True)
         textbox.insert("1.0", content)
 
-        # Syntax highlighting tags
         textbox.tag_config("keyword", foreground="#569CD6")
         textbox.tag_config("string", foreground="#CE9178")
         textbox.tag_config("comment", foreground="#6A9955")
@@ -76,7 +75,6 @@ class PythonIDE(ctk.CTk):
         tab = self.get_active_tab()
         filepath = self.tab_files.get(tab)
 
-        # If no file path exists, prompt user to save
         if not filepath:
             filepath = filedialog.asksaveasfilename(
                 defaultextension=".py",
@@ -86,12 +84,10 @@ class PythonIDE(ctk.CTk):
                 return
             self.tab_files[tab] = filepath
 
-        # Save file content
         text = tab.textbox.get("1.0", "end")
         with open(filepath, "w", encoding="utf-8") as f:
             f.write(text)
 
-        # Update tab title
         self.notebook.tab(tab, text=os.path.basename(filepath))
 
     def close_tab(self):
