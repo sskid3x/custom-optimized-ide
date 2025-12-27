@@ -11,12 +11,14 @@ ctk.set_default_color_theme("dark-blue")
 
 PY_KEYWORDS = r"\b(" + "|".join(keyword.kwlist) + r")\b"
 
+
 class PythonIDE(ctk.CTk):
     def __init__(self):
         super().__init__()
         self.title("my very own ide in python... made by liquidify.net on discord")
         self.geometry("1100x700")
         self.tab_files = {}
+        
         top = ctk.CTkFrame(self)
         top.pack(fill="x", padx=10, pady=8)
         ctk.CTkButton(top, text="New Tab", command=self.new_tab).pack(side="left", padx=5)
@@ -24,7 +26,6 @@ class PythonIDE(ctk.CTk):
         ctk.CTkButton(top, text="Open", command=self.open_file).pack(side="left", padx=5)
         ctk.CTkButton(top, text="Save", command=self.save_file).pack(side="left", padx=5)
         ctk.CTkButton(top, text="Run ▶", fg_color="#2ecc71", command=self.run_script).pack(side="left", padx=5)
-
         self.notebook = ttk.Notebook(self)
         style = ttk.Style()
         style.theme_use('clam')
@@ -32,6 +33,7 @@ class PythonIDE(ctk.CTk):
         style.configure('TNotebook.Tab', background='#2D2D2D', foreground='white')
         style.map('TNotebook.Tab', background=[('selected', '#3C3C3C')])
         self.notebook.pack(fill="both", expand=True, padx=10, pady=10)
+
         self.new_tab()
 
     def new_tab(self, content="", filename=None):
@@ -42,10 +44,12 @@ class PythonIDE(ctk.CTk):
         editor_frame = ctk.CTkFrame(frame)
         editor_frame.pack(fill="both", expand=True)
 
-        linenumbers = ctk.CTkTextbox(editor_frame, width=50, state="disabled", fg_color='#1E1E1E', text_color='white')
+        linenumbers = ctk.CTkTextbox(editor_frame, width=50, state="disabled",
+                                     fg_color='#1E1E1E', text_color='white')
         linenumbers.pack(side="left", fill="y")
 
-        textbox = ctk.CTkTextbox(editor_frame, wrap="none", fg_color='#1E1E1E', text_color='white')
+        textbox = ctk.CTkTextbox(editor_frame, wrap="none",
+                                 fg_color='#1E1E1E', text_color='white')
         textbox.pack(side="right", fill="both", expand=True)
         textbox.insert("1.0", content)
 
@@ -53,10 +57,12 @@ class PythonIDE(ctk.CTk):
         textbox.tag_config("string", foreground="#CE9178")
         textbox.tag_config("comment", foreground="#6A9955")
         textbox.tag_config("number", foreground="#B5CEA8")
+
         textbox.bind("<KeyRelease>", lambda e, t=textbox, l=linenumbers: self.update_editor(t, l))
 
         frame.textbox = textbox
         frame.linenumbers = linenumbers
+
         self.update_editor(textbox, linenumbers)
         return frame
 
@@ -102,10 +108,13 @@ class PythonIDE(ctk.CTk):
         if not filepath:
             return
         self.save_file()
+
         file_dir = os.path.dirname(filepath)
-        file_name = os.path.basename(filepath)
-        cmd = f'cd "{file_dir}"; py "{file_name}"'
-        subprocess.Popen(["powershell", "-NoLogo", "-NoProfile", "-Command", cmd])
+        subprocess.Popen(
+            ["py", filepath],
+            cwd=file_dir,
+            shell=True
+        )
 
     def update_editor(self, textbox, linenumbers):
         self.update_linenumbers(textbox, linenumbers)
@@ -124,14 +133,19 @@ class PythonIDE(ctk.CTk):
         code = textbox.get("1.0", "end")
         for tag in ("keyword", "string", "comment", "number"):
             textbox.tag_remove(tag, "1.0", "end")
+
         for match in re.finditer(PY_KEYWORDS, code):
             textbox.tag_add("keyword", f"1.0+{match.start()}c", f"1.0+{match.end()}c")
+
         for match in re.finditer(r"(['\"]).*?\1", code):
             textbox.tag_add("string", f"1.0+{match.start()}c", f"1.0+{match.end()}c")
+
         for match in re.finditer(r"#.*", code):
             textbox.tag_add("comment", f"1.0+{match.start()}c", f"1.0+{match.end()}c")
+
         for match in re.finditer(r"\b\d+\b", code):
             textbox.tag_add("number", f"1.0+{match.start()}c", f"1.0+{match.end()}c")
+
 
 if __name__ == "__main__":
     PythonIDE().mainloop()
